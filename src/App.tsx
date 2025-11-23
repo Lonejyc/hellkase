@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { AuthPage } from './components/AuthPage';
 import CaseOpener from "./components/CaseOpener";
@@ -8,10 +8,11 @@ import CaseListPage from './components/CaseListPage';
 
 function AppContent() {
     const { user, loading } = useAuth();
-    const [page, setPage] = useState('home'); // 'home' est maintenant la liste
+    const [page, setPage] = useState('home');
+    const AuthComp: any = AuthPage;
 
     // URLs de base (seront modifiées par l'ID)
-    const baseUrl = "https://symfo-gobelins.test/api";
+    const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
         if (!user && (page.startsWith('case/') || page === 'inventory')) {
@@ -45,9 +46,9 @@ function AppContent() {
         // Si l'utilisateur n'est pas connecté
         if (!user) {
              if (page === 'register') {
-                 return <AuthPage key="register" view="register" setPage={setPage} />;
+                 return <AuthComp key="register" view="register" setPage={setPage} />;
              }
-             return <AuthPage key="login" view="login" setPage={setPage} />;
+             return <AuthComp key="login" view="login" setPage={setPage} />;
         }
 
         // Si l'utilisateur EST connecté, on gère les autres pages

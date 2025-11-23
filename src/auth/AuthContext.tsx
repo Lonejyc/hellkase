@@ -1,9 +1,9 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 
 // L'URL de base de votre API Symfony
-const API_BASE_URL = "https://symfo-gobelins.test/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // L'URL de login (qui est spéciale car hors /api)
-const LOGIN_CHECK_URL = "https://symfo-gobelins.test/api/login";
+const LOGIN_CHECK_URL = import.meta.env.VITE_LOGIN_CHECK_URL;
 
 // Définition des types pour l'utilisateur et le contexte
 interface User {
@@ -48,6 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
 
         if (token) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             headers['Authorization'] = `Bearer ${token}`;
         }
 

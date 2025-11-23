@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../auth/AuthContext'; // On garde le Contexte d'authentification
 
 // --- Définition des Types (inchangés) ---
@@ -37,13 +37,13 @@ interface CaseOpenerProps {
 }
 
 // --- Helpers (inchangés) ---
-const shuffleArray = (array: any[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-};
+// const shuffleArray = (array: any[]) => {
+//     for (let i = array.length - 1; i > 0; i--) {
+//         const j = Math.floor(Math.random() * (i + 1));
+//         [array[i], array[j]] = [array[j], array[i]];
+//     }
+//     return array;
+// };
 
 const getRarityClass = (rarity: string) => {
     const rarityMap: { [key: string]: string } = {

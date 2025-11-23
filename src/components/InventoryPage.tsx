@@ -43,7 +43,7 @@ interface RarityBorderProps {
     children: React.ReactNode;
 }
 const RarityBorder: React.FC<RarityBorderProps> = ({ rarity, children }) => {
-    const rarityClass = `rarity-border-${rarity.replace(/ /g, '-')}`;
+    // const rarityClass = `rarity-border-${rarity.replace(/ /g, '-')}`;
     return (
         <div className={`border-4 ${getRarityClass(rarity)} p-2 rounded-lg bg-gray-700`}>
             {children}
