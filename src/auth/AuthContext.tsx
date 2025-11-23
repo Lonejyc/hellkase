@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         try {
             // NOTE : J'utilise '/user/me' comme défini dans votre User.php
-            const userData = await fetchApi('/user/1');
+            const userData = await fetchApi('/user/me');
             setUser(userData);
         } catch (error) {
             console.error("Erreur fetchUser:", error);
@@ -140,8 +140,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const response = await fetch(`${API_BASE_URL}/user`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                'Content-Type': 'application/ld+json',
+                'Accept': 'application/ld+json',
             },
             body: JSON.stringify({ pseudo, email, password }),
         });

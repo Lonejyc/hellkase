@@ -34,7 +34,7 @@ function AppContent() {
 
         // Si la page commence par "case/", on affiche CaseOpener
         if (page.startsWith('case/')) {
-            const caseId = page.split('/')[1]; // Récupère l'ID (ex: "1")
+            const caseId = page.split('/')[1];
 
             // On passe les URL dynamiques à CaseOpener
             return <CaseOpener

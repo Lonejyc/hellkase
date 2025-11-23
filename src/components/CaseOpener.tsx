@@ -83,24 +83,38 @@ const CaseOpener = ({ getCaseUrl, openCaseUrl }: CaseOpenerProps) => {
 
     const { fetchApi, fetchUser } = useAuth();
 
+    const toRelativePath = (url: string) => {
+        try {
+            if (url.startsWith('http')) {
+                const u = new URL(url);
+                // retire un éventuel préfixe '/api' pour correspondre au comportement attendu
+                return u.pathname.replace(/^\/api/, '') + u.search;
+            }
+            return url;
+        } catch {
+            return url;
+        }
+    };
+
+
     // 1. Charger les données de la caisse (inchangé)
     useEffect(() => {
         const fetchCaseData = async () => {
             try {
-                const relativeGetUrl = getCaseUrl.replace("https://symfo-gobelins.test/api", "");
+                const relativeGetUrl = toRelativePath(getCaseUrl);
                 const data: Kase = await fetchApi(relativeGetUrl);
                 setCaseData(data);
                 // On génère une première bande juste pour l'affichage initial
                 if (data.caseItems.length > 0) {
                     const itemsFromCase = data.caseItems.map(ci => ci.item);
-                    let tempReel: Item[] = [];
+                    const tempReel: Item[] = [];
                     for (let i = 0; i < REEL_LENGTH; i++) {
                          tempReel.push(itemsFromCase[Math.floor(Math.random() * itemsFromCase.length)]);
                     }
                     setReelItems(tempReel);
                 }
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err: unknown) {
+                setError(err instanceof Error ? err.message : String(err));
             }
         };
         fetchCaseData();
@@ -128,7 +142,7 @@ const CaseOpener = ({ getCaseUrl, openCaseUrl }: CaseOpenerProps) => {
             }
 
             // c. Appeler l'API pour savoir ce qu'on a VRAIMENT gagné
-            const relativeOpenUrl = openCaseUrl.replace("https://symfo-gobelins.test/api", "");
+            const relativeOpenUrl = openCaseUrl.replace("https://localhost:8443/api", "");
             const wonInventoryItem: InventoryItem = await fetchApi(relativeOpenUrl, {
                 method: 'POST',
                 body: JSON.stringify({}) // Corps vide
