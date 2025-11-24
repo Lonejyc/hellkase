@@ -33,6 +33,12 @@ export function Navbar({ setPage }: NavbarProps) {
 
                                 <div className="flex space-x-1">
                                     <button
+                                        className="text-yellow-400 hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-bold transition-colors hover:bg-white/5"
+                                        onClick={() => setPage('subscriptions')} // <-- NOUVEAU LIEN
+                                    >
+                                        👑 ABOS
+                                    </button>
+                                    <button
                                         className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-white/5"
                                         onClick={() => setPage('inventory')}
                                     >

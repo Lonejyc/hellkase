@@ -6,17 +6,17 @@ import { Navbar } from './components/Navbar';
 import InventoryPage from './components/InventoryPage';
 import CaseListPage from './components/CaseListPage';
 import ContractPage from './components/ContractPage';
+import SubscriptionPage from './components/SubscriptionPage';
 
 function AppContent() {
     const { user, loading } = useAuth();
     const [page, setPage] = useState('home');
     const AuthComp: any = AuthPage;
 
-    // URLs de base (seront modifiées par l'ID)
     const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
-        if (!user && (page.startsWith('case/') || page === 'inventory')) {
+        if (!user && (page.startsWith('case/') || page === 'inventory' || page === 'contract' || page === 'subscriptions')) {
             setPage('home');
         }
     }, [user, page]);
@@ -31,20 +31,15 @@ function AppContent() {
             );
         }
 
-        // --- 2. Gérer le routage dynamique ---
-
-        // Si la page commence par "case/", on affiche CaseOpener
         if (page.startsWith('case/')) {
             const caseId = page.split('/')[1];
 
-            // On passe les URL dynamiques à CaseOpener
             return <CaseOpener
                 getCaseUrl={`${baseUrl}/case/${caseId}`}
                 openCaseUrl={`${baseUrl}/case/${caseId}/open`}
             />;
         }
 
-        // Si l'utilisateur n'est pas connecté
         if (!user) {
              if (page === 'register') {
                  return <AuthComp key="register" view="register" setPage={setPage} />;
@@ -52,7 +47,6 @@ function AppContent() {
              return <AuthComp key="login" view="login" setPage={setPage} />;
         }
 
-        // Si l'utilisateur EST connecté, on gère les autres pages
         switch (page) {
             case 'home':
                 return <CaseListPage setPage={setPage} />;
@@ -60,6 +54,8 @@ function AppContent() {
                 return <InventoryPage />;
             case 'contract':
                 return <ContractPage />;
+            case 'subscriptions':
+                return <SubscriptionPage />;
             default:
                 setPage('home');
                 return <CaseListPage setPage={setPage} />;
@@ -76,7 +72,6 @@ function AppContent() {
     );
 }
 
-// Le composant App racine n'a pas changé
 function App() {
     return (
         <AuthProvider>
