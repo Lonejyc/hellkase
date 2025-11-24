@@ -5,6 +5,7 @@ import CaseOpener from "./components/CaseOpener";
 import { Navbar } from './components/Navbar';
 import InventoryPage from './components/InventoryPage';
 import CaseListPage from './components/CaseListPage';
+import ContractPage from './components/ContractPage';
 
 function AppContent() {
     const { user, loading } = useAuth();
@@ -54,12 +55,12 @@ function AppContent() {
         // Si l'utilisateur EST connecté, on gère les autres pages
         switch (page) {
             case 'home':
-                // 'home' affiche maintenant la liste des caisses
                 return <CaseListPage setPage={setPage} />;
             case 'inventory':
                 return <InventoryPage />;
+            case 'contract':
+                return <ContractPage />;
             default:
-                // Sécurité : si la page est inconnue, retour à l'accueil
                 setPage('home');
                 return <CaseListPage setPage={setPage} />;
         }
