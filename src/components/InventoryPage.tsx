@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
-import ConfirmationModal from './ConfirmationModal'; // <-- 1. Importez le Modal
+import ConfirmationModal from './ConfirmationModal';
+import { getRarityStyle } from '../utils/rarity';
 
-// --- Types (inchangés) ---
+// --- Types ---
 interface Item {
     id: number;
     name: string;
@@ -19,69 +20,49 @@ interface InventoryItem {
     wearTierName: string;
 }
 
-// ... (Gardez vos helpers : getRarityClass, RarityBorder, Spinner) ...
-
-// --- Helper (copié de CaseOpener) ---
-const getRarityClass = (rarity: string) => {
-    const rarityMap: { [key: string]: string } = {
-        'Consumer Grade': 'border-gray-400',
-        'Industrial Grade': 'border-blue-300',
-        'Mil-Spec': 'border-blue-600',
-        'Restricted': 'border-purple-600',
-        'Classified': 'border-pink-600',
-        'Covert': 'border-red-600',
-        'Extraordinary': 'border-yellow-500',
-        'Contraband': 'border-yellow-700',
-    };
-    return rarityMap[rarity] || 'border-gray-500';
-};
 const Spinner = () => (
     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
 );
-interface RarityBorderProps {
-    rarity: string;
-    children: React.ReactNode;
-}
-const RarityBorder: React.FC<RarityBorderProps> = ({ rarity, children }) => {
-    // const rarityClass = `rarity-border-${rarity.replace(/ /g, '-')}`;
-    return (
-        <div className={`border-4 ${getRarityClass(rarity)} p-2 rounded-lg bg-gray-700`}>
-            {children}
-        </div>
-    );
-};
-// --- Fin des helpers ---
 
-
-// --- Composant "Carte d'Item" (Modifié) ---
-interface InventoryItemCardProps {
-    invItem: InventoryItem;
-    onSellClick: () => void; // <-- Modifié : n'exécute pas, demande l'ouverture du modal
-    isSelling: boolean;
-}
-
-const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ invItem, onSellClick, isSelling }) => {
+const InventoryItemCard: React.FC<{ invItem: InventoryItem; onSellClick: () => void; isSelling: boolean; }> = ({ invItem, onSellClick, isSelling }) => {
     const { item, statTrak, float, calculatedPrice, wearTierName } = invItem;
+    const style = getRarityStyle(item.rarity);
 
     return (
-        <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col">
-            <RarityBorder rarity={item.rarity}>
-                <img src={item.imageUrl} alt={item.name} className="w-full h-32 object-contain" />
-            </RarityBorder>
-            <div className="p-3 flex flex-col flex-grow">
-                {statTrak && <p className="text-orange-400 font-bold text-sm">StatTrak™</p>}
-                <p className="text-white text-sm font-semibold truncate">{item.name}</p>
-                <p className="text-gray-300 text-xs">{wearTierName}</p>
-                <p className="text-gray-400 text-xs truncate" title={`Float: ${float}`}>{float.toFixed(6)}</p>
-                <div className="flex-grow"></div>
-                <p className="text-yellow-400 font-bold text-lg mt-2">{calculatedPrice.toFixed(2)} €</p>
-                <button
-                    onClick={onSellClick} // <-- Modifié
-                    disabled={isSelling}
-                    className="w-full mt-2 bg-green-600 hover:bg-green-500 text-white text-sm font-bold py-1 px-2 rounded disabled:bg-gray-600"
-                >
-                    Vendre
-                </button>
+        <div className={`group relative bg-slate-800/40 backdrop-blur-sm rounded-xl overflow-hidden border border-white/5 transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-[0_0_20px_-5px_rgba(0,0,0,0.5)] hover:border-white/20`}>
+
+            {/* Fond brillant basé sur la rareté */}
+            <div className={`absolute inset-0 bg-gradient-to-b ${style.bg} opacity-20 group-hover:opacity-40 transition-opacity`}></div>
+
+            {/* Barre de couleur de rareté en bas */}
+            <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-${style.border.replace('border-', '')} to-transparent opacity-70 group-hover:h-1.5 transition-all shadow-[0_0_10px_currentColor] ${style.text}`}></div>
+
+            <div className="p-4 relative z-10 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-2">
+                    {statTrak && <span className="text-[10px] font-black text-orange-500 tracking-widest uppercase border border-orange-500/30 px-1.5 py-0.5 rounded bg-orange-500/10">StatTrak™</span>}
+                    <span className="text-[10px] text-slate-500 font-mono ml-auto">{float.toFixed(4)}</span>
+                </div>
+
+                <div className="flex-grow flex items-center justify-center py-4">
+                    <img src={item.imageUrl} alt={item.name} className="max-h-28 max-w-full object-contain drop-shadow-lg filter group-hover:brightness-110 transition-all" />
+                </div>
+
+                <div className="mt-auto">
+                    <p className={`text-xs font-bold truncate ${style.text}`}>{item.rarity}</p>
+                    <h3 className="text-sm font-medium text-white truncate mb-1">{item.name}</h3>
+                    <p className="text-xs text-slate-400 mb-3">{wearTierName}</p>
+
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="text-yellow-400 font-bold font-mono">{calculatedPrice.toFixed(2)} €</span>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onSellClick(); }}
+                            disabled={isSelling}
+                            className="bg-slate-700 hover:bg-green-600/80 text-white text-xs font-bold py-1.5 px-3 rounded transition-colors disabled:opacity-50"
+                        >
+                            Vendre
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -169,45 +150,48 @@ export const InventoryPage: React.FC = () => {
     };
 
     return (
-        <> {/* 4. On utilise un Fragment pour inclure le Modal */}
-            <div className="container mx-auto px-4 py-8 text-white">
-                <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6 flex justify-between items-center">
+        <>
+            <div className="container mx-auto px-4 py-8">
+                {/* Header Stats */}
+                <div className="bg-slate-900/50 border border-white/10 p-6 rounded-2xl backdrop-blur-xl mb-8 flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
                     <div>
-                        <h1 className="text-3xl font-bold">Mon Inventaire</h1>
-                        <p className="text-lg text-gray-300">
-                            {inventoryItems.length} item{inventoryItems.length > 1 ? 's' : ''} -
-                            <span className="text-yellow-400 font-bold ml-2">Valeur: {totalValue.toFixed(2)} €</span>
+                        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase tracking-tighter">Mon Inventaire</h1>
+                        <p className="text-slate-400 mt-1">
+                            <span className="text-white font-bold">{inventoryItems.length}</span> skins <span className="mx-2">|</span>
+                            Valeur totale : <span className="text-cyan-400 font-bold font-mono text-xl drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]">{totalValue.toFixed(2)} €</span>
                         </p>
                     </div>
                     <button
-                        onClick={handleSellAllClick} // <-- Modifié
+                        onClick={handleSellAllClick}
                         disabled={isSelling || inventoryItems.length === 0}
-                        className="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded disabled:bg-gray-600"
+                        className="bg-red-500/10 border border-red-500/50 hover:bg-red-500 text-red-500 hover:text-white font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_15px_-5px_rgba(239,68,68,0.3)] hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] disabled:opacity-50 disabled:shadow-none"
                     >
-                        {isSelling ? <Spinner /> : 'Tout Vendre'}
+                        {isSelling ? <Spinner /> : 'TOUT VENDRE'}
                     </button>
                 </div>
 
-                {message && <p className="text-green-400 text-center mb-4">{message}</p>}
-                {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+                {/* Grid */}
+                {message && <div className="p-4 mb-6 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-center animate-pulse">{message}</div>}
+                {error && <div className="p-4 mb-6 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-center">{error}</div>}
 
                 {inventoryItems.length === 0 ? (
-                    <p className="text-gray-400 text-center p-8">Votre inventaire est vide. Ouvrez des caisses !</p>
+                    <div className="text-center py-20 opacity-50">
+                        <div className="text-6xl mb-4">📦</div>
+                        <p className="text-xl font-light">Votre inventaire est vide.</p>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                         {inventoryItems.map((invItem) => (
                             <InventoryItemCard
                                 key={invItem.id}
                                 invItem={invItem}
-                                onSellClick={() => handleSellItemClick(invItem)} // <-- Modifié
+                                onSellClick={() => handleSellItemClick(invItem)}
                                 isSelling={isSelling}
                             />
                         ))}
                     </div>
                 )}
             </div>
-
-            {/* 5. On affiche le Modal (il est invisible si modalInfo est null) */}
             <ConfirmationModal
                 isOpen={!!modalInfo}
                 title={modalInfo?.title || ""}

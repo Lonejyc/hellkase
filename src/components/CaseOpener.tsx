@@ -121,19 +121,17 @@ const CaseOpener = ({ getCaseUrl, openCaseUrl }: CaseOpenerProps) => {
     }, [getCaseUrl, fetchApi]);
 
     // 2. Logique d'ouverture de caisse (entièrement revue)
-    const handleOpenCase = async () => {
+   const handleOpenCase = async () => {
         if (isSpinning || !caseData || caseData.caseItems.length === 0) return;
 
         setIsSpinning(true);
         setWonItem(null);
         setError(null);
 
-        // a. "Rembobiner" instantanément (au cas où)
         setTransitionDuration('0s');
         setTranslateX(0);
 
         try {
-            // b. Générer une NOUVELLE bande aléatoire de 100 items
             const itemsFromCase = caseData.caseItems.map(ci => ci.item);
             let tempReel: Item[] = [];
             for (let i = 0; i < REEL_LENGTH; i++) {
@@ -141,48 +139,37 @@ const CaseOpener = ({ getCaseUrl, openCaseUrl }: CaseOpenerProps) => {
                 tempReel.push(itemsFromCase[randomIndex]);
             }
 
-            // c. Appeler l'API pour savoir ce qu'on a VRAIMENT gagné
             const relativeOpenUrl = openCaseUrl.replace("https://localhost:8443/api", "");
             const wonInventoryItem: InventoryItem = await fetchApi(relativeOpenUrl, {
                 method: 'POST',
-                body: JSON.stringify({}) // Corps vide
+                body: JSON.stringify({})
             });
             const wonItemTemplate = wonInventoryItem.item;
 
-            // d. "Planter" l'item gagné à la position 90
             tempReel[TARGET_INDEX] = wonItemTemplate;
 
-            // e. Mettre à jour l'état de la bande (React re-rend le composant)
             setReelItems(tempReel);
 
-            // f. Calculer la position (AVEC LE X-FACTOR)
-            const containerWidth = reelContainerRef.current?.clientWidth || 0;
             const randomOffset = (Math.random() - 0.5) * (SLIDE_WIDTH * 0.8);
 
             const targetTranslate =
                 -(TARGET_INDEX * SLIDE_TOTAL_WIDTH)
-                + (containerWidth / 2)
                 - (SLIDE_WIDTH / 2)
                 + randomOffset;
 
-            // g. Lancer l'animation
             setTimeout(() => {
                 setTransitionDuration(`${ANIMATION_DURATION_MS}ms`);
                 setTranslateX(targetTranslate);
             }, 50);
 
-            // h. Gérer la fin de l'animation (Arrêt)
             setTimeout(() => {
                 setIsSpinning(false);
-                fetchUser(); // Met à jour le solde
+                fetchUser();
             }, ANIMATION_DURATION_MS + 200);
 
-            // --- DEBUT DE LA MODIFICATION (Modal décalé) ---
-            // i. Afficher le modal APRES un délai
             setTimeout(() => {
                 setWonItem(wonInventoryItem);
-            }, ANIMATION_DURATION_MS + MODAL_DELAY_MS + 200); // 1s après l'arrêt
-            // --- FIN DE LA MODIFICATION ---
+            }, ANIMATION_DURATION_MS + MODAL_DELAY_MS + 200);
 
         } catch (err: any) {
             setError(err.message);
@@ -190,35 +177,31 @@ const CaseOpener = ({ getCaseUrl, openCaseUrl }: CaseOpenerProps) => {
         }
     };
 
-    // Rendu du composant
     if (error) return <div className="text-red-500">{error}</div>;
     if (!caseData) return <div>Chargement de la caisse...</div>;
 
     return (
-        // --- DEBUT MODIFICATION (Toute la largeur) ---
         <div className="w-full p-4 flex flex-col items-center">
-        {/* --- FIN MODIFICATION --- */}
             <h2 className="text-3xl font-bold text-center mb-4">{caseData.name}</h2>
 
-            {/* Le Carrousel (Contrôlé par CSS) */}
             <div
                 ref={reelContainerRef}
-                // --- DEBUT MODIFICATION (Toute la largeur) ---
-                className="relative w-full overflow-hidden h-[150px]" // `max-w-6xl` retiré
-                // --- FIN MODIFICATION ---
+                className="relative w-full overflow-hidden h-[200px] bg-slate-950/80 border-y border-white/10 shadow-inner"
             >
-                {/* Le marqueur central */}
                 <div
-                    className="absolute top-0 w-1 h-full bg-yellow-400 z-10"
-                    style={{ left: 'calc(50% - 2px)' }}
+                    className="absolute top-0 w-1 h-full z-20 shadow-[0_0_15px_#fbbf24]"
+                    style={{ left: 'calc(50% - 2px)', background: '#fbbf24' }}
                 ></div>
 
-                {/* La bande d'items (le "reel") */}
                 <div
-                    className="flex gap-2 absolute top-0 left-0"
+                    className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-r from-slate-900 via-transparent to-slate-900"
+                ></div>
+
+                <div
+                    className="flex gap-2 absolute top-0 left-0 items-center h-full pl-[50%]"
                     style={{
                         transform: `translateX(${translateX}px)`,
-                        transition: `transform ${transitionDuration} cubic-bezier(0.1, 0.6, 0.1, 1)`
+                        transition: `transform ${transitionDuration} cubic-bezier(0.15, 0.85, 0.35, 1)`
                     }}
                 >
                     {reelItems.map((item, index) => (
@@ -240,7 +223,6 @@ const CaseOpener = ({ getCaseUrl, openCaseUrl }: CaseOpenerProps) => {
                 </div>
             </div>
 
-            {/* Le bouton (inchangé) */}
             <div className="text-center mt-6">
                 <button
                     onClick={handleOpenCase}
@@ -251,7 +233,6 @@ const CaseOpener = ({ getCaseUrl, openCaseUrl }: CaseOpenerProps) => {
                 </button>
             </div>
 
-            {/* Le Modal de Victoire (inchangé) */}
             {wonItem && (
                 <div className="fixed inset-0 bg-black bg-opacity-70 z-20 flex items-center justify-center" onClick={() => setWonItem(null)}>
                     <div className="bg-gray-800 p-6 rounded-lg text-center shadow-xl" onClick={e => e.stopPropagation()}>
